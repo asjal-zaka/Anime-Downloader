@@ -15,5 +15,13 @@
   "bugs": {
     "url": "https://github.com/asjal16/Anime-Downloader/issues"
   },
-  "homepage": "https://github.com/asjal16/Anime-Downloader#readme"
+  "homepage": "https://github.com/asjal16/Anime-Downloader#readme",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "chalk": "^5.3.0",
+    "cheerio": "^1.0.0-rc.12",
+    "http-status": "^1.7.4",
+    "inquirer": "^9.2.23"
+  },
+  "type": "module"
 }

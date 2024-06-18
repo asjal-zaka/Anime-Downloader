@@ -12,13 +12,15 @@ export const searchModule = async (query, page = 1) => {
     const $ = load(response.data)
     $(".last_episodes ul.items li").each((i, _el) => {
         const $el = $(_el);
-        const cover = $el.find(".img a img").attr("src");
         const title = $el.find(".name a").attr("title");
+        const id =  $el.find(".name a").attr("href").split("/")[2];
         const release = $el.find(".released").text().match(/\d+/)[0];
+        const cover = $el.find(".img a img").attr("src");
         list.push({
-            cover,
             title,
-            release
+            id,
+            release,
+            cover
         })
     })
     return list;

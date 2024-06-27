@@ -1,9 +1,7 @@
 import axios from "axios";
 import { load } from "cheerio";
-import httpStatus from "http-status";
 
 const baseURL = "https://anitaku.to";
-const ajax_url = "https://ajax.gogocdn.net/";
 
 export const searchModule = async (query, page = 1) => {
     const list = []

@@ -24,8 +24,10 @@
     "http-status": "^1.7.4",
     "inquirer": "^9.2.23",
     "is-online": "^10.0.0",
+    "open": "^10.1.0",
     "ora": "^8.0.1",
-    "puppeteer": "^22.12.0"
+    "puppeteer": "^22.12.0",
+    "terminal-link": "^3.0.0"
   },
   "type": "module"
 }

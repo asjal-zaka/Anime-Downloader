@@ -2,6 +2,7 @@ import chalk from "chalk";
 import inquirer from "inquirer";
 import ora from "ora";
 import isOnline from 'is-online';
+import open from "open";
 
 import { searchModule } from './modules/search.js';
 import { getParams } from './modules/getParams.js';
@@ -79,18 +80,19 @@ const downloadSingle = async () => {
         const spinner = ora({ text: "Searching...", spinner: "earth" }).start()
         const results = await getResults(searchValue, pageValue);
         spinner.stop()
-        if(!results) return;
+        if(!results) return spinner.stop();
 
-        const { animeDownload } = await inquirer.prompt({
+        const { animeChoice } = await inquirer.prompt({
             type: "list",
-            name: "animeDownload",
+            name: "animeChoice",
             message: "Choose Anime To Download",
             choices: results.map(result => result.title)
         });
         
-        const animeID = results.find(result => result.title === animeDownload).id;
+        const animeID = results.find(result => result.title === animeChoice).id;
+        const spinnerEp = ora({ text: "Getting Episode List...", spinner: "earth" }).start();
         const episodes = await getParams(animeID);
-
+        spinnerEp.stop()
         const { episodeChoice } = await inquirer.prompt({
             type: "number",
             name: "episodeChoice",
@@ -108,13 +110,90 @@ const downloadSingle = async () => {
             }
         });
         const episodeID = `${animeID}-episode-${await episodeChoice}`;
-        const dlLink = await getLinks(episodeID);
-        const directDlLink = await getDownload(await dlLink);
-        console.log(directDlLink);
+        const spinnerDL = ora({ text: "Getting Download Links...", spinner: "earth" }).start();
+        const getDLLink = await getLinks(episodeID);
+        const getDirectLinks = await getDownload(getDLLink);
+        const directLinks = getDirectLinks.anchorsHref.map((url, index) => {
+            return {
+              text: getDirectLinks.anchorsText[index],
+              url: url
+            };
+          });
+        spinnerDL.stop()
+        if(!directLinks) return spinnerDL.stop();
+        const resChoice = await inquirer.prompt({
+            type: "list",
+            name: "resChoice",
+            message: "Choose Resolution To Download",
+            choices: directLinks.map(link => link.text)
+        })
+        const selectedLink = directLinks.find(link => link.text === resChoice.resChoice);
+        if (selectedLink) {
+          open(selectedLink.url);
+        } else {
+          console.log('Invalid selection');
+        }
     } catch (err) {
         console.log("Error: " + err.message);
     }
 };
+
+const downloadBatch = async () => {
+    try{
+        const searchValue = await search();
+        const pageValue = await page();
+        const spinner = ora({ text: "Searching...", spinner: "earth" }).start()
+        const results = await getResults(searchValue, pageValue);
+        spinner.start()
+        if(!results) return;
+
+        const { animeChoice } = await inquirer.prompt({
+            type: "list",
+            name: "animeChoice",
+            message: "Choose Anime To Download",
+            choices: results.map(result => result.title)
+        });
+        
+        const animeID = results.find(result => result.title === animeChoice).id;
+        const episodes = await getParams(animeID);
+        const { episodeChoiceMin } = await inquirer.prompt({
+            type: "number",
+            name: "episodeChoiceMin",
+            message: `Enter Episode Number To Start Downloading From: [${Number(episodes.epMin) + 1}-${episodes.epMax}]:`,
+            validate: (value) => {
+                if (value <= episodes.epMin) {
+                    return `Episode Number can't be less than ${episodes.epMin}`;
+                } else if (value > episodes.epMax) {
+                    return `Episode Number can't be greater than ${episodes.epMax}`;
+                } else if (value == NaN) {
+                    return "Invalid Episode Number. Please enter a valid number.";
+                } else {
+                    return true;
+                }
+            }
+        }) 
+        const { episodeChoiceMax } = await inquirer.prompt({
+            type: "number",
+            name: "episodeChoiceMax",
+            message: `Enter Episode Number To End Downloading At: [${episodeChoiceMin}-${episodes.epMax}]:`,
+            validate: (value) => {
+                if (value <= episodeChoiceMin) {
+                    return `Episode Number can't be less than ${episodes.epMin}`;
+                } else if (value > episodes.epMax) {
+                    return `Episode Number can't be greater than ${episodes.epMax}`;
+                } else if (value == NaN) {
+                    return "Invalid Episode Number. Please enter a valid number.";
+                } else {
+                    return true;
+                }
+            }
+        })
+        const episodeIDs = [];
+    }
+    catch (err) {
+        console.log("Error: " + err.message);
+    }
+}
 
 const choice = async () => {
     const { choice } = await inquirer.prompt({

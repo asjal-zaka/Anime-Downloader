@@ -19,12 +19,7 @@ export const getDownload = async (link) => {
   const links = await page.$$eval('.dowload a', anchors => {
     const anchorsHref = anchors.map(anchor => anchor.href);
     const anchorsText= anchors.map(anchor => anchor.innerText);
-    const resolutions = anchorsText.map(download => {
-      const startIdx = download.indexOf('(') + 1;
-      const endIdx = download.indexOf('-');
-      return download.substring(startIdx, endIdx).trim();
-  });
-  return { anchorsHref, resolutions };
+  return { anchorsHref, anchorsText };
   });
   await browser.close();
   return links;

@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import inquirer from "inquirer";
-import ora from "ora";
+import ora, { spinners } from "ora";
 import isOnline from 'is-online';
 import open from "open";
 
@@ -144,7 +144,7 @@ const downloadBatch = async () => {
         const pageValue = await page();
         const spinner = ora({ text: "Searching...", spinner: "earth" }).start()
         const results = await getResults(searchValue, pageValue);
-        spinner.start()
+        spinner.stop()
         if(!results) return;
 
         const { animeChoice } = await inquirer.prompt({
@@ -156,6 +156,14 @@ const downloadBatch = async () => {
         
         const animeID = results.find(result => result.title === animeChoice).id;
         const episodes = await getParams(animeID);
+
+        const { resChoice } = await inquirer.prompt({
+            type: "list",
+            name: "resChoice",
+            message: "Choose Download Resolution:",
+            choices: ["360p", "480p", "720p", "1080p"]
+        });
+
         const { episodeChoiceMin } = await inquirer.prompt({
             type: "number",
             name: "episodeChoiceMin",
@@ -189,6 +197,20 @@ const downloadBatch = async () => {
             }
         })
         const episodeIDs = [];
+        for(let i = episodeChoiceMin; i <= episodeChoiceMax; i++){
+            episodeIDs.push(`${animeID}-episode-${i}`)
+        }
+        for(let i = 0; i < episodeIDs.length; i++){
+            const spinnerDL = ora({ text: `Getting Download Link for Episode ${episodeChoiceMin + i}`, spinner: "earth" }).start();
+            const getDLLink = await getLinks(episodeIDs[i]);
+            const directLinks = await getDownload(getDLLink);
+            if(resChoice == "360p"){console.log(`\n ${chalk.yellow(`Episode ${episodeChoiceMin + i}:`)} ${directLinks.anchorsHref[0]}`)}
+            else if(resChoice == "480p"){console.log(`\n ${chalk.yellow(`Episode ${episodeChoiceMin + i}:`)} ${directLinks.anchorsHref[1]}`)}
+            else if(resChoice == "720p"){console.log(`\n ${chalk.yellow(`Episode ${episodeChoiceMin + i}:`)} ${directLinks.anchorsHref[2]}`)}
+            else if(resChoice == "1080p"){console.log(`\n ${chalk.yellow(`Episode ${episodeChoiceMin + i}:`)} ${directLinks.anchorsHref[3]}`)}
+            spinnerDL.succeed({text: "Link Generated Successfully"}) 
+            spinnerDL.clear()
+        }
     }
     catch (err) {
         console.log("Error: " + err.message);
@@ -218,8 +240,10 @@ const main = async () => {
             await logResults();
         } else if (userChoice === "Download (Single)") {
             await downloadSingle();
+        } else if (userChoice === "Download (Batch)") {
+            await downloadBatch();
         } else if (userChoice === "Exit") {
-            console.log('Goodbye!');
+            console.log('Exiting..');
             process.exit(0);
         }
     }

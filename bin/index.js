@@ -1,13 +1,15 @@
+#!/usr/bin/env node
+
 import chalk from "chalk";
 import inquirer from "inquirer";
 import ora, { spinners } from "ora";
 import isOnline from 'is-online';
 import open from "open";
 
-import { searchModule } from './modules/search.js';
-import { getParams } from './modules/getParams.js';
-import { getEpisodeList } from './modules/episodes.js';
-import { getLinks, getDownload } from './modules/download.js';
+import { searchModule } from '../modules/search.js';
+import { getParams } from '../modules/getParams.js';
+import { getEpisodeList } from '../modules/episodes.js';
+import { getLinks, getDownload } from '../modules/download.js';
 
 
 const search = async () => {
@@ -237,6 +239,7 @@ const main = async () => {
         const userChoice = await choice();
 
         if (userChoice === "Search") {
+            console.log("CLI ANIME DOWNLOADER")
             await logResults();
         } else if (userChoice === "Download (Single)") {
             await downloadSingle();
